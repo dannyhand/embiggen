@@ -250,14 +250,151 @@
       font-size: 12px
     }
 
-    input[type=color] {
+    .swatch {
       width: 52px;
       height: 36px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: none;
-      padding: 2px;
+      box-shadow: inset 0 0 0 3px var(--card);
+      padding: 0;
       cursor: pointer
+    }
+
+    /* colour picker (same in every browser) */
+    #cp {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0, 0, 0, .45)
+    }
+
+    #cp.open {
+      display: flex
+    }
+
+    @media (min-height: 640px) {
+      #cp {
+        align-items: center
+      }
+    }
+
+    .cp-panel {
+      width: min(360px, 100%);
+      margin: 0 0 env(safe-area-inset-bottom);
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .3)
+    }
+
+    .cp-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600
+    }
+
+    .cp-done {
+      border: 0;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font: inherit;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--accent-ink);
+      cursor: pointer
+    }
+
+    .cp-sv {
+      position: relative;
+      height: 180px;
+      border-radius: 10px;
+      touch-action: none;
+      cursor: crosshair;
+      background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent)
+    }
+
+    .cp-hue {
+      position: relative;
+      height: 24px;
+      border-radius: 99px;
+      touch-action: none;
+      cursor: pointer;
+      background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)
+    }
+
+    .cp-dot {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .5), 0 1px 4px rgba(0, 0, 0, .4);
+      pointer-events: none
+    }
+
+    .cp-thumb {
+      position: absolute;
+      top: 50%;
+      width: 24px;
+      height: 24px;
+      margin: -12px 0 0 -12px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .5), 0 1px 4px rgba(0, 0, 0, .4);
+      pointer-events: none
+    }
+
+    .cp-row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .cp-now {
+      width: 52px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      flex: none
+    }
+
+    .cp-hex {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 18px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      text-transform: lowercase
+    }
+
+    .cp-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .cp-presets button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      padding: 0
     }
 
     select {
@@ -507,8 +644,10 @@
     </header>
 
     <div class="card settings" id="settings">
-      <div class="set"><label for="fg">Text color</label><input type="color" id="fg" value="#000000"></div>
-      <div class="set"><label for="bg">Background color</label><input type="color" id="bg" value="#ffffff"></div>
+      <div class="set"><label for="fg">Text color</label><button class="swatch" id="fg"
+          aria-label="Text color"></button></div>
+      <div class="set"><label for="bg">Background color</label><button class="swatch" id="bg"
+          aria-label="Background color"></button></div>
       <div class="set">
         <label for="anim">Animation</label>
         <select id="anim">
@@ -557,7 +696,9 @@
     <h2>Saved text</h2>
     <ul class="saved" id="savedList"></ul>
 
-    <footer class="foot"><a href="https://dannyhand.us" target="_blank" rel="noopener">dannyhand.us</a> - <a href="https://github.com/dannyhand/embiggen" target="_blank" rel="noopener">github</a></footer>
+    <footer class="foot"><a href="https://dannyhand.us" target="_blank" rel="noopener">dannyhand.us</a> - <a
+        href="https://github.com/dannyhand/embiggen" target="_blank" rel="noopener">github</a> - <a
+        href="./rs/" target="_blank" rel="noopener">scape text</a></footer>
   </div>
 
   <div id="big" role="dialog" aria-label="Embiggened text">
@@ -573,6 +714,23 @@
     </div>
   </div>
   <div id="measure"></div>
+  <div id="cp" role="dialog" aria-label="Pick a color">
+    <div class="cp-panel">
+      <div class="cp-title"><span id="cpTitle">Pick a color</span><button class="cp-done" id="cpDone">Done</button>
+      </div>
+      <div class="cp-sv" id="cpSV">
+        <div class="cp-dot" id="cpDot"></div>
+      </div>
+      <div class="cp-hue" id="cpHue">
+        <div class="cp-thumb" id="cpThumb"></div>
+      </div>
+      <div class="cp-row">
+        <div class="cp-now" id="cpNow"></div><input class="cp-hex" id="cpHex" maxlength="7" spellcheck="false"
+          autocomplete="off" aria-label="Hex color">
+      </div>
+      <div class="cp-presets" id="cpPresets"></div>
+    </div>
+  </div>
   <div id="toast"></div>
 
   <script>
@@ -582,6 +740,61 @@
     get(k, d){ try{ const v = localStorage.getItem('embiggen.'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
     set(k, v){ try{ localStorage.setItem('embiggen.'+k, JSON.stringify(v)); }catch(e){} }
   };
+  // ---------- color picker (same in every browser) ----------
+  const picker = (() => {
+    const el = $('cp'), sv = $('cpSV'), dot = $('cpDot'), hue = $('cpHue'), thumb = $('cpThumb'), hexIn = $('cpHex'), now = $('cpNow');
+    let h = 0, sat = 1, val = 1, cb = null;
+    const toHex = (h, s, v) => {
+      const f = n => { const k = (n + h/60) % 6; return v - v*s*Math.max(0, Math.min(k, 4-k, 1)); };
+      return '#' + [f(5), f(3), f(1)].map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('');
+    };
+    const fromHex = hx => {
+      const [r,g,b] = [1,3,5].map(i => parseInt(hx.slice(i,i+2),16)/255);
+      const mx = Math.max(r,g,b), mn = Math.min(r,g,b), d = mx - mn;
+      let hh = 0;
+      if(d){ hh = mx === r ? ((g-b)/d) % 6 : mx === g ? (b-r)/d + 2 : (r-g)/d + 4; hh = (hh*60 + 360) % 360; }
+      return [hh, mx ? d/mx : 0, mx];
+    };
+    const valid = x => /^#[0-9a-f]{6}$/i.test(x);
+    function paint(fromInput){
+      const c = toHex(h, sat, val);
+      sv.style.backgroundColor = toHex(h, 1, 1);
+      dot.style.left = (sat*100) + '%'; dot.style.top = ((1-val)*100) + '%';
+      dot.style.background = c; thumb.style.background = toHex(h, 1, 1);
+      thumb.style.left = (h/360*100) + '%';
+      now.style.background = c;
+      if(!fromInput) hexIn.value = c;
+      if(cb) cb(c);
+    }
+    function drag(area, fn){
+      const go = e => { const r = area.getBoundingClientRect();
+        fn(Math.min(1, Math.max(0, (e.clientX - r.left)/r.width)), Math.min(1, Math.max(0, (e.clientY - r.top)/r.height))); paint(); };
+      area.addEventListener('pointerdown', e => { area.setPointerCapture(e.pointerId); go(e); e.preventDefault(); });
+      area.addEventListener('pointermove', e => { if(area.hasPointerCapture(e.pointerId)) go(e); });
+    }
+    drag(sv, (x, y) => { sat = x; val = 1 - y; });
+    drag(hue, x => { h = Math.min(359.9, x*360); });
+    hexIn.addEventListener('input', () => {
+      let v = hexIn.value.trim(); if(v[0] !== '#') v = '#' + v;
+      if(/^#[0-9a-f]{3}$/i.test(v)) v = '#' + [...v.slice(1)].map(c => c+c).join('');
+      if(valid(v)){ [h, sat, val] = fromHex(v); paint(true); }
+    });
+    const presets = ['#000000','#ffffff','#ff0000','#ff9500','#ffcc00','#34c759','#00c7be','#007aff','#5856d6','#af52de','#ff2d55','#8e8e93'];
+    presets.forEach(c => { const b = document.createElement('button'); b.style.background = c; b.setAttribute('aria-label', c);
+      b.onclick = () => { [h, sat, val] = fromHex(c); paint(); }; $('cpPresets').appendChild(b); });
+    const close = () => { el.classList.remove('open'); cb = null; };
+    $('cpDone').onclick = close;
+    el.addEventListener('click', e => { if(e.target === el) close(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && el.classList.contains('open')){ e.stopPropagation(); close(); } }, true);
+    return {
+      open(color, title, onChange){
+        cb = null; [h, sat, val] = fromHex(valid(color) ? color : '#000000');
+        $('cpTitle').textContent = title || 'Pick a color';
+        el.classList.add('open'); paint(); cb = onChange;
+      }
+    };
+  })();
+
   const DEFAULTS = {fg:'#000000', bg:'#ffffff', anim:'scale', split:true, caps:false, autoplay:0};
   let prefs = Object.assign({}, DEFAULTS, store.get('prefs', {}));
   let saved = store.get('saved', []);
@@ -590,18 +803,20 @@
 
   // ---------- settings ----------
   function applyPrefsToUI(){
-    $('fg').value = prefs.fg; $('bg').value = prefs.bg; $('anim').value = prefs.anim;
+    $('fg').style.background = prefs.fg; $('bg').style.background = prefs.bg; $('anim').value = prefs.anim;
     $('split').checked = prefs.split; $('caps').checked = prefs.caps; $('autoplay').value = prefs.autoplay;
     const p = $('preview'); p.style.color = prefs.fg; p.style.background = prefs.bg;
     p.textContent = prefs.caps ? 'AA' : 'Aa';
   }
   function savePrefs(){
-    prefs = { fg:$('fg').value, bg:$('bg').value, anim:$('anim').value, split:$('split').checked,
+    prefs = { fg:prefs.fg, bg:prefs.bg, anim:$('anim').value, split:$('split').checked,
               caps:$('caps').checked, autoplay:Math.max(0, parseFloat($('autoplay').value)||0) };
     store.set('prefs', prefs); applyPrefsToUI();
   }
-  ['fg','bg','anim','split','caps','autoplay'].forEach(id => $(id).addEventListener('input', savePrefs));
-  $('swap').onclick = () => { const a=$('fg').value; $('fg').value=$('bg').value; $('bg').value=a; savePrefs(); };
+  ['anim','split','caps','autoplay'].forEach(id => $(id).addEventListener('input', savePrefs));
+  $('fg').onclick = () => picker.open(prefs.fg, 'Text color', c => { prefs.fg = c; savePrefs(); });
+  $('bg').onclick = () => picker.open(prefs.bg, 'Background color', c => { prefs.bg = c; savePrefs(); });
+  $('swap').onclick = () => { [prefs.fg, prefs.bg] = [prefs.bg, prefs.fg]; savePrefs(); };
   $('reset').onclick = () => { prefs = Object.assign({}, DEFAULTS); store.set('prefs', prefs); applyPrefsToUI(); };
   $('gear').onclick = () => $('settings').classList.toggle('open');
   applyPrefsToUI();
