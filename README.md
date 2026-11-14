@@ -5,3 +5,5 @@ emBiggen was once an android app that would make bigger whatever text you entere
 
 Try it out at https://dannyhand.us/embiggen/
 
+It also works as a colorful flashlight to help your friends find you in a crowd, if you set background and text both to a bright color.
+
