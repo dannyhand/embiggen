@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Scape Text</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Drop a RuneScape-style TTF at fonts/runescape.ttf (e.g. the fan-made "RuneScape UF") and it takes over automatically. */
+    @font-face {
+      font-family: "RSFont";
+      src: url("fonts/runescape.ttf") format("truetype");
+      font-weight: 100 900;
+      font-display: swap;
+    }
+
+    :root {
+      --rs-font: "RSFont", "Pixelify Sans", monospace;
+      --parch: #d8c9a3;
+      --parch-dark: #b5a07a;
+      --wood: #3e3529;
+      --wood-2: #5a4d3b;
+      --ink: #000;
+      --yellow: #ffff00;
+      --muted: #4b3f2f;
+      --line: #8a7a5c;
+      --accent: #ffff00;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%
+    }
+
+    body {
+      font-family: var(--rs-font);
+      background: transparent;
+      color: #ffff00;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    html {
+      background: #2b241b
+    }
+
+    /* gradient pinned to the viewport so it never repeats on long pages */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(ellipse at top, #463b2c 0%, #2b241b 70%)
+    }
+
+    code {
+      font-family: inherit;
+      font-size: inherit
+    }
+
+    .rs {
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .app {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0;
+      font-weight: 700;
+      color: #ff981f;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: .02em
+    }
+
+    .iconbtn {
+      background: var(--wood-2);
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 1px #6f604a;
+      color: #ff981f;
+      font: 700 18px var(--rs-font);
+      padding: 6px 12px;
+      cursor: pointer;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .iconbtn:hover {
+      color: #fff
+    }
+
+    /* "stone/wood" panels */
+    .panel {
+      background: var(--wood);
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 2px #5a4d3b, inset 0 0 0 3px #000;
+      padding: 12px;
+      color: #ff981f;
+    }
+
+    /* chatbox */
+    .chat {
+      background: var(--parch);
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 2px var(--parch-dark);
+      padding: 10px 12px;
+    }
+
+    .chat .who {
+      color: #000;
+      font-weight: 700
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #0000ff;
+      font: 500 20px/1.3 var(--rs-font);
+    }
+
+    textarea::placeholder {
+      color: #5a4d3b
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    button.btn {
+      flex: 1;
+      min-width: 110px;
+      cursor: pointer;
+      background: #4a3f30;
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 1px #75664e;
+      color: #ff981f;
+      font: 700 17px var(--rs-font);
+      padding: 12px 14px;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    button.btn:hover {
+      color: #fff
+    }
+
+    button.btn:active {
+      transform: translateY(1px)
+    }
+
+    button.primary {
+      background: #5b4a2b;
+      color: #ffff00;
+      font-size: 20px
+    }
+
+    .hint {
+      color: #c8b48a;
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.35;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .hint code {
+      color: #00ffff
+    }
+
+    h2 {
+      font-size: 16px;
+      color: #ff981f;
+      margin: 6px 2px 0;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    /* effect pickers */
+    .label {
+      font-size: 14px;
+      color: #c8b48a;
+      margin: 0 0 6px;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .chip {
+      cursor: pointer;
+      background: #1e1912;
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 1px #4a3f30;
+      font: 700 16px var(--rs-font);
+      padding: 6px 10px;
+      text-shadow: 1px 1px 0 #000;
+      color: #ffff00;
+    }
+
+    .customchip {
+      display: inline-flex;
+      gap: 4px;
+      align-items: stretch
+    }
+
+    .chip[aria-pressed=true] {
+      box-shadow: inset 0 0 0 2px #ffff00;
+      background: #3a3020
+    }
+
+    .previewbox {
+      margin-top: 10px;
+      background: #000;
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 1px #4a3f30;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative
+    }
+
+    .set {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px
+    }
+
+    .set label {
+      color: #ff981f;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .set small {
+      display: block;
+      color: #c8b48a;
+      font-size: 12px
+    }
+
+    .swatch {
+      width: 52px;
+      height: 34px;
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 2px #1e1912, inset 0 0 0 3px #6f604a;
+      cursor: pointer;
+      padding: 0
+    }
+
+    .customchip .swatch {
+      width: 40px;
+      height: auto
+    }
+
+    /* colour picker */
+    #cp {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0, 0, 0, .55)
+    }
+
+    #cp.open {
+      display: flex
+    }
+
+    @media (min-height:640px) {
+      #cp {
+        align-items: center
+      }
+    }
+
+    .cp-panel {
+      width: min(360px, 100%);
+      margin: 0 0 env(safe-area-inset-bottom);
+      background: var(--wood);
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 2px #5a4d3b, inset 0 0 0 3px #000;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .cp-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ff981f;
+      font-weight: 700;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .cp-sv {
+      position: relative;
+      height: 180px;
+      border: 2px solid #000;
+      touch-action: none;
+      cursor: crosshair;
+      background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent)
+    }
+
+    .cp-hue {
+      position: relative;
+      height: 26px;
+      border: 2px solid #000;
+      touch-action: none;
+      cursor: pointer;
+      background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)
+    }
+
+    .cp-dot {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      margin: -9px 0 0 -9px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px #000, inset 0 0 0 1px #000;
+      pointer-events: none
+    }
+
+    .cp-thumb {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 8px;
+      margin-left: -4px;
+      background: #fff;
+      border: 1px solid #000;
+      pointer-events: none
+    }
+
+    .cp-row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .cp-now {
+      width: 52px;
+      height: 38px;
+      border: 2px solid #000;
+      flex: none
+    }
+
+    .cp-hex {
+      flex: 1;
+      min-width: 0;
+      font: 700 18px var(--rs-font);
+      padding: 6px 8px;
+      border: 2px solid #000;
+      background: #1e1912;
+      color: #ffff00;
+      text-transform: lowercase
+    }
+
+    .cp-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .cp-presets button {
+      width: 32px;
+      height: 32px;
+      border: 2px solid #000;
+      cursor: pointer;
+      padding: 0
+    }
+
+    select,
+    input[type=number] {
+      font: 600 15px var(--rs-font);
+      padding: 6px;
+      border: 2px solid #000;
+      background: #1e1912;
+      color: #ffff00
+    }
+
+    .check {
+      width: 22px;
+      height: 22px;
+      accent-color: #ff981f
+    }
+
+    .saved {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .saved li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--parch);
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 1px var(--parch-dark);
+      padding: 4px 4px 4px 10px
+    }
+
+    .saved .txt {
+      flex: 1;
+      cursor: pointer;
+      padding: 6px 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #0000ff;
+      font-size: 17px
+    }
+
+    .saved .small {
+      background: none;
+      border: 0;
+      color: #5a4d3b;
+      font: 600 14px var(--rs-font);
+      padding: 6px 8px;
+      cursor: pointer
+    }
+
+    .saved .small:hover {
+      color: #000
+    }
+
+    .saved .del:hover {
+      color: #b00000
+    }
+
+    .empty {
+      color: #c8b48a;
+      font-size: 14px;
+      padding: 4px 2px
+    }
+
+    .foot {
+      text-align: center;
+      padding: 24px 0 8px;
+      font-size: 14px
+    }
+
+    .foot a {
+      color: #c8b48a;
+      text-decoration: none;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .foot a:hover {
+      color: #ffff00
+    }
+
+    /* big view */
+    #big {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 10;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-y;
+      background: #000;
+      padding: calc(env(safe-area-inset-top) + 4vmin) calc(env(safe-area-inset-right) + 4vmin) calc(env(safe-area-inset-bottom) + 6vmin) calc(env(safe-area-inset-left) + 4vmin);
+    }
+
+    #big.open {
+      display: flex
+    }
+
+    #stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative
+    }
+
+    .rstext {
+      font-family: var(--rs-font);
+      font-weight: 700;
+      line-height: 1.15;
+      text-align: center;
+      white-space: normal;
+      text-shadow: .07em .07em 0 #000;
+    }
+
+    .rstext .w {
+      display: inline-block;
+      white-space: nowrap
+    }
+
+    .rstext .c {
+      display: inline-block;
+      will-change: transform
+    }
+
+    .rstext.single {
+      white-space: nowrap
+    }
+
+    .bigbar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(env(safe-area-inset-bottom) + 10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      opacity: .75;
+      transition: opacity .2s;
+      pointer-events: none
+    }
+
+    .bigbar.hide {
+      opacity: 0
+    }
+
+    .bigbar>* {
+      pointer-events: auto
+    }
+
+    .pill {
+      background: #3e3529;
+      border: 2px solid #000;
+      box-shadow: inset 0 0 0 1px #6f604a;
+      padding: 6px 12px;
+      font: 700 15px var(--rs-font);
+      cursor: pointer;
+      color: #ff981f;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    #counter {
+      font: 700 15px var(--rs-font);
+      color: #ff981f;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    .close {
+      position: absolute;
+      top: calc(env(safe-area-inset-top) + 8px);
+      right: calc(env(safe-area-inset-right) + 8px);
+      opacity: .6
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      background: #000;
+      border: 2px solid #4a3f30;
+      color: #ffff00;
+      padding: 8px 14px;
+      font: 700 16px var(--rs-font);
+      transition: .25s;
+      z-index: 20;
+      pointer-events: none;
+      text-shadow: 1px 1px 0 #000
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%)
+    }
+
+    #measure {
+      position: absolute;
+      visibility: hidden;
+      left: -99999px;
+      top: 0
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <h1>Scape Text</h1>
+      <button class="iconbtn" id="gear" aria-label="Settings">Settings</button>
+    </header>
+
+    <div class="chat">
+      <textarea id="text" placeholder="Type here... (try  glow1:wave:Selling lobbies)" aria-label="Text"></textarea>
+    </div>
+
+    <div class="panel">
+      <p class="label">Colour</p>
+      <div class="chips" id="colorChips"></div>
+      <p class="label" style="margin-top:12px">Effect</p>
+      <div class="chips" id="fxChips"></div>
+      <div class="previewbox">
+        <div id="preview" class="rstext" style="font-size:34px"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="settings" style="display:none">
+      <div class="set" style="margin-top:0"><label for="bg">Background<small>Black is the classic overhead
+            look</small></label><button class="swatch" id="bg" aria-label="Background colour"></button></div>
+      <div class="set">
+        <label for="split">Split sentences<small>. ! or ? starts a new screen</small></label>
+        <input type="checkbox" class="check" id="split">
+      </div>
+      <div class="set">
+        <label for="autoplay">Auto-advance<small>Seconds per sentence (0 = off)</small></label>
+        <input type="number" id="autoplay" min="0" max="30" step="0.5" value="0" style="width:72px">
+      </div>
+      <div class="set">
+        <label>Font<small id="fontStatus">Checking fonts/runescape.ttf…</small></label>
+      </div>
+      <div class="set">
+        <label for="speed">Effect speed</label>
+        <select id="speed">
+          <option value="0.5">Slow</option>
+          <option value="1">Normal</option>
+          <option value="1.6">Fast</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row"><button class="btn primary" id="go">Show it big</button></div>
+    <div class="row">
+      <button class="btn" id="save">Save</button>
+      <button class="btn" id="copy">Copy</button>
+      <button class="btn" id="clear">Clear</button>
+    </div>
+    <p class="hint">Works like the in-game chat: start a message with <code>colour:effect:</code>, e.g.
+      <code>flash1:shake:help</code> or <code>purple:scroll:gf</code>. Any hex colour works too:
+      <code>#ff8800:wave:hi</code>. A prefix overrides the buttons for that sentence. In big mode, tap or swipe for the
+      next sentence, and Esc exits.
+    </p>
+
+    <h2>Saved</h2>
+    <ul class="saved" id="savedList"></ul>
+
+    <footer class="foot"><a href="https://dannyhand.us" target="_blank" rel="noopener">dannyhand.us</a> - <a
+        href="https://github.com/dannyhand/embiggen" target="_blank" rel="noopener">github</a> - <a
+        href="../" target="_blank" rel="noopener">embiggen</a></footer>
+  </div>
+
+  <div id="big" role="dialog" aria-label="Big text">
+    <div id="stage">
+      <div id="word" class="rstext"></div>
+    </div>
+    <button class="pill close" id="closeBig" aria-label="Close">X</button>
+    <div class="bigbar" id="bigbar">
+      <button class="pill" id="prev" aria-label="Previous">&lt;</button>
+      <span id="counter"></span>
+      <button class="pill" id="next" aria-label="Next">&gt;</button>
+      <button class="pill" id="fs">Fullscreen</button>
+    </div>
+  </div>
+  <div id="measure" class="rstext"></div>
+  <div id="cp" role="dialog" aria-label="Pick a colour">
+    <div class="cp-panel">
+      <div class="cp-title"><span id="cpTitle">Pick a colour</span><button class="pill" id="cpDone">Done</button></div>
+      <div class="cp-sv" id="cpSV">
+        <div class="cp-dot" id="cpDot"></div>
+      </div>
+      <div class="cp-hue" id="cpHue">
+        <div class="cp-thumb" id="cpThumb"></div>
+      </div>
+      <div class="cp-row">
+        <div class="cp-now" id="cpNow"></div><input class="cp-hex" id="cpHex" maxlength="7" spellcheck="false"
+          autocomplete="off" aria-label="Hex colour">
+      </div>
+      <div class="cp-presets" id="cpPresets"></div>
+    </div>
+  </div>
+  <div id="toast"></div>
+
+  <script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem('scapetext.'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem('scapetext.'+k, JSON.stringify(v)); }catch(e){} }
+  };
+
+  // ---------- OSRS chat colours & effects ----------
+  const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const mix = (a,b,f) => { const A=hex(a),B=hex(b); return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*f)).join(',')})`; };
+  const cycle = (stops, t, period) => {           // smooth loop through colour stops
+    const p = ((((t/period) % 1) + 1) % 1) * stops.length, i = Math.floor(p) % stops.length, f = p - Math.floor(p);
+    return mix(stops[i], stops[(i+1)%stops.length], f);
+  };
+  const flash = (a, b, t) => (Math.floor(t / 0.4) % 2 ? b : a);
+
+  const COLORS = {
+    yellow:  () => '#ffff00',
+    red:     () => '#ff0000',
+    green:   () => '#00ff00',
+    cyan:    () => '#00ffff',
+    purple:  () => '#ff00ff',
+    white:   () => '#ffffff',
+    flash1:  t => flash('#ff0000', '#ffff00', t),
+    flash2:  t => flash('#00ffff', '#0000ff', t),
+    flash3:  t => flash('#00b000', '#80ff80', t),
+    glow1:   t => cycle(['#ff0000','#ffff00','#00ff00','#00ffff'], t, 3),
+    glow2:   t => cycle(['#ff0000','#ff00ff','#0000ff'], t, 3),
+    glow3:   t => cycle(['#ffffff','#00ff00','#00ffff'], t, 3),
+  };
+  const SWATCH = {yellow:'#ffff00',red:'#ff0000',green:'#00ff00',cyan:'#00ffff',purple:'#ff00ff',white:'#ffffff'};
+  const colorFn = key =>
+    COLORS[key] || (key === 'custom' ? () => prefs.custom : /^#[0-9a-f]{6}$/i.test(key) ? () => key : COLORS.yellow);
+  const EFFECTS = ['none','wave','wave2','shake','scroll','slide'];
+
+  // ---------- colour picker (same in every browser) ----------
+  const picker = (() => {
+    const el = $('cp'), sv = $('cpSV'), dot = $('cpDot'), hue = $('cpHue'), thumb = $('cpThumb'), hexIn = $('cpHex'), now = $('cpNow');
+    let h = 0, sat = 1, val = 1, cb = null;
+    const toHex = (h, s, v) => {
+      const f = n => { const k = (n + h/60) % 6; return v - v*s*Math.max(0, Math.min(k, 4-k, 1)); };
+      return '#' + [f(5), f(3), f(1)].map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('');
+    };
+    const fromHex = hx => {
+      const [r,g,b] = [1,3,5].map(i => parseInt(hx.slice(i,i+2),16)/255);
+      const mx = Math.max(r,g,b), mn = Math.min(r,g,b), d = mx - mn;
+      let hh = 0;
+      if(d){ hh = mx === r ? ((g-b)/d) % 6 : mx === g ? (b-r)/d + 2 : (r-g)/d + 4; hh = (hh*60 + 360) % 360; }
+      return [hh, mx ? d/mx : 0, mx];
+    };
+    const valid = x => /^#[0-9a-f]{6}$/i.test(x);
+    function paint(fromInput){
+      const c = toHex(h, sat, val);
+      sv.style.backgroundColor = toHex(h, 1, 1);
+      dot.style.left = (sat*100) + '%'; dot.style.top = ((1-val)*100) + '%';
+      thumb.style.left = (h/360*100) + '%';
+      now.style.background = c;
+      if(!fromInput) hexIn.value = c;
+      if(cb) cb(c);
+    }
+    function drag(area, fn){
+      const go = e => { const r = area.getBoundingClientRect();
+        fn(Math.min(1, Math.max(0, (e.clientX - r.left)/r.width)), Math.min(1, Math.max(0, (e.clientY - r.top)/r.height))); paint(); };
+      area.addEventListener('pointerdown', e => { area.setPointerCapture(e.pointerId); go(e); e.preventDefault(); });
+      area.addEventListener('pointermove', e => { if(area.hasPointerCapture(e.pointerId)) go(e); });
+    }
+    drag(sv, (x, y) => { sat = x; val = 1 - y; });
+    drag(hue, x => { h = Math.min(359.9, x*360); });
+    hexIn.addEventListener('input', () => {
+      let v = hexIn.value.trim(); if(v[0] !== '#') v = '#' + v;
+      if(/^#[0-9a-f]{3}$/i.test(v)) v = '#' + [...v.slice(1)].map(c => c+c).join('');
+      if(valid(v)){ [h, sat, val] = fromHex(v); paint(true); }
+    });
+    const presets = ['#ffff00','#ff0000','#00ff00','#00ffff','#ff00ff','#ffffff','#ff981f','#0000ff','#000000','#2b241b','#d8c9a3','#00b000'];
+    presets.forEach(c => { const b = document.createElement('button'); b.style.background = c; b.setAttribute('aria-label', c);
+      b.onclick = () => { [h, sat, val] = fromHex(c); paint(); }; $('cpPresets').appendChild(b); });
+    const close = () => { el.classList.remove('open'); cb = null; };
+    $('cpDone').onclick = close;
+    el.addEventListener('click', e => { if(e.target === el) close(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && el.classList.contains('open')){ e.stopPropagation(); close(); } }, true);
+    return {
+      open(color, title, onChange){
+        cb = null; [h, sat, val] = fromHex(valid(color) ? color : '#ffff00');
+        $('cpTitle').textContent = title || 'Pick a colour';
+        el.classList.add('open'); paint(); cb = onChange;
+      }
+    };
+  })();
+
+  const DEFAULTS = {custom:'#ff981f', color:'yellow', fx:'wave', bg:'#000000', split:true, autoplay:0, speed:1};
+  let prefs = Object.assign({}, DEFAULTS, store.get('prefs', {}));
+  let saved = store.get('saved', []);
+  const text = $('text');
+  text.value = store.get('draft', '');
+
+  // parse "glow1:wave:message" (either order, either optional)
+  function parsePrefix(s, base){
+    let color = base.color, fx = base.fx, m;
+    for(let k=0;k<2;k++){
+      m = s.match(/^\s*(#[0-9a-f]{6}|[a-z0-9]+):/i);
+      if(!m) break;
+      const key = m[1].toLowerCase();
+      if(COLORS[key] || key[0] === '#') color = key; else if(EFFECTS.includes(key) && key!=='none') fx = key; else break;
+      s = s.slice(m[0].length);
+    }
+    return {text:s.trim(), color, fx};
+  }
+
+  // ---------- animated text renderer ----------
+  function build(el, str, single){
+    el.innerHTML = '';
+    el.classList.toggle('single', !!single);
+    const chars = [];
+    str.split(/(\s+)/).forEach(tok => {
+      if(!tok) return;
+      if(/^\s+$/.test(tok)){ el.appendChild(document.createTextNode(' ')); return; }
+      const w = document.createElement('span'); w.className = 'w';
+      for(const ch of tok){ const c = document.createElement('span'); c.className='c'; c.textContent = ch; w.appendChild(c); chars.push(c); }
+      el.appendChild(w);
+    });
+    return chars;
+  }
+
+  const actors = new Set();   // things being animated
+  function animate(el, str, color, fx, opts={}){
+    const single = fx === 'scroll';
+    const chars = build(el, str, single);
+    const a = {el, chars, color, fx, t0: performance.now(), stage: opts.stage || el.parentElement};
+    actors.add(a);
+    return a;
+  }
+  function stop(a){ if(a) actors.delete(a); }
+
+  function tick(now){
+    for(const a of actors){
+      const t = Math.max(0, now - a.t0) / 1000 * prefs.speed;
+      a.el.style.color = colorFn(a.color)(t);
+      const n = a.chars.length;
+      if(a.fx === 'wave' || a.fx === 'wave2'){
+        a.el.style.transform = '';
+        for(let i=0;i<n;i++){
+          const ph = t*6 - i*0.55;
+          const y = Math.sin(ph) * 0.14, x = a.fx === 'wave2' ? Math.cos(ph) * 0.1 : 0;
+          a.chars[i].style.transform = `translate(${x}em,${y}em)`;
+        }
+      } else if(a.fx === 'shake'){
+        a.el.style.transform = '';
+        const phase = t % 1.6, amp = phase < 0.8 ? (1 - phase/0.8) : 0;
+        for(let i=0;i<n;i++){
+          const y = -Math.abs(Math.sin(t*28 + i*1.7)) * 0.22 * amp;
+          a.chars[i].style.transform = `translateY(${y}em)`;
+        }
+      } else if(a.fx === 'scroll'){
+        const W = a.stage.clientWidth, tw = a.el.offsetWidth;
+        const dur = Math.max(2.5, (W + tw) / Math.max(W,1) * 2.5);
+        const p = (t % dur) / dur;
+        a.el.style.transform = `translateX(${(W/2 + tw/2) - p*(W + tw)}px)`;
+        for(const c of a.chars) c.style.transform = '';
+      } else if(a.fx === 'slide'){
+        const p = t % 3.2;
+        let y = 0, o = 1;
+        if(p < 0.45){ const f = p/0.45; y = -(1-f)*1.2; o = f; }
+        else if(p > 2.75){ const f = (p-2.75)/0.45; y = f*1.2; o = 1-f; }
+        a.el.style.transform = `translateY(${y}em)`; a.el.style.opacity = o;
+        for(const c of a.chars) c.style.transform = '';
+      } else {
+        a.el.style.transform = ''; a.el.style.opacity = 1;
+        for(const c of a.chars) c.style.transform = '';
+      }
+      if(a.fx !== 'slide') a.el.style.opacity = 1;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // ---------- pickers & preview ----------
+  let previewActor = null;
+  function refreshPreview(){
+    stop(previewActor);
+    const p = parsePrefix((text.value.split(/[.!?\n]/)[0] || '').trim(), prefs);
+    const sample = p.text ? p.text.slice(0, 22) : 'Selling lobbies';
+    previewActor = animate($('preview'), sample, p.color, p.fx, {stage: $('preview').parentElement});
+  }
+  function chips(){
+    const cc = $('colorChips'); cc.innerHTML = '';
+    Object.keys(COLORS).forEach(k => {
+      const b = document.createElement('button'); b.className='chip'; b.textContent = k;
+      b.setAttribute('aria-pressed', prefs.color === k);
+      b.style.color = SWATCH[k] || '#ffff00';
+      b.dataset.color = k;
+      b.onclick = () => { prefs.color = k; savePrefs(); chips(); };
+      cc.appendChild(b);
+    });
+    // custom colour: chip + colour picker
+    const wrap = document.createElement('span'); wrap.className = 'customchip';
+    const cb = document.createElement('button'); cb.className = 'chip'; cb.textContent = 'custom';
+    cb.setAttribute('aria-pressed', prefs.color === 'custom'); cb.style.color = prefs.custom;
+    cb.onclick = () => { prefs.color = 'custom'; savePrefs(); chips(); };
+    const ci = document.createElement('button'); ci.className = 'swatch'; ci.style.background = prefs.custom; ci.setAttribute('aria-label','Custom colour');
+    ci.onclick = () => picker.open(prefs.custom, 'Custom text colour', c => {
+      prefs.custom = c; prefs.color = 'custom'; ci.style.background = c; cb.style.color = c; cb.setAttribute('aria-pressed', true);
+      cc.querySelectorAll('.chip').forEach(x => { if(x !== cb) x.setAttribute('aria-pressed', false); }); savePrefs(); refreshPreview(); });
+    wrap.append(cb, ci); cc.appendChild(wrap);
+    const fc = $('fxChips'); fc.innerHTML = '';
+    EFFECTS.forEach(k => {
+      const b = document.createElement('button'); b.className='chip'; b.textContent = k;
+      b.setAttribute('aria-pressed', prefs.fx === k);
+      b.onclick = () => { prefs.fx = k; savePrefs(); chips(); };
+      fc.appendChild(b);
+    });
+    refreshPreview();
+  }
+  // animate the flash/glow chip labels
+  (function chipLoop(now){
+    document.querySelectorAll('#colorChips .chip').forEach(b => {
+      const k = b.dataset.color; if(k && COLORS[k] && !SWATCH[k]) b.style.color = COLORS[k](now/1000*prefs.speed);
+    });
+    requestAnimationFrame(chipLoop);
+  })(0);
+
+  function applyPrefsToUI(){
+    $('bg').style.background = prefs.bg; $('split').checked = prefs.split; $('autoplay').value = prefs.autoplay; $('speed').value = String(prefs.speed);
+  }
+  function savePrefs(){
+    prefs.split = $('split').checked;
+    prefs.autoplay = Math.max(0, parseFloat($('autoplay').value)||0);
+    prefs.speed = parseFloat($('speed').value) || 1;
+    store.set('prefs', prefs);
+  }
+  ['split','autoplay','speed'].forEach(id => $(id).addEventListener('input', savePrefs));
+  $('bg').onclick = () => picker.open(prefs.bg, 'Background colour', c => { prefs.bg = c; $('bg').style.background = c; savePrefs(); });
+  $('gear').onclick = () => { const s=$('settings'); s.style.display = s.style.display==='none' ? '' : 'none'; };
+  applyPrefsToUI();
+
+  // ---------- toast ----------
+  let tt;
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),1600); }
+
+  // ---------- saved list ----------
+  function renderSaved(){
+    const ul = $('savedList'); ul.innerHTML = '';
+    if(!saved.length){ const li=document.createElement('div'); li.className='empty'; li.textContent='Nothing saved yet.'; ul.appendChild(li); return; }
+    saved.forEach((s, i) => {
+      const li = document.createElement('li');
+      const t = document.createElement('div'); t.className='txt'; t.textContent = s; t.title='Show big';
+      t.onclick = () => { text.value = s; draft(); show(s); };
+      const edit = document.createElement('button'); edit.className='small'; edit.textContent='Edit';
+      edit.onclick = () => { text.value = s; draft(); text.focus(); window.scrollTo({top:0,behavior:'smooth'}); };
+      const del = document.createElement('button'); del.className='small del'; del.textContent='Delete';
+      del.onclick = () => { saved.splice(i,1); store.set('saved', saved); renderSaved(); toast('Deleted'); };
+      li.append(t, edit, del); ul.appendChild(li);
+    });
+  }
+  renderSaved();
+
+  function draft(){ store.set('draft', text.value); refreshPreview(); }
+  text.addEventListener('input', draft);
+  $('save').onclick = () => {
+    const s = text.value.trim(); if(!s){ toast('Type something first'); return; }
+    saved = [s, ...saved.filter(x => x !== s)]; store.set('saved', saved); renderSaved(); toast('Saved');
+  };
+  $('copy').onclick = async () => {
+    try{ await navigator.clipboard.writeText(text.value); toast('Copied'); }catch(e){ text.select(); toast('Select and copy manually'); }
+  };
+  $('clear').onclick = () => { text.value=''; draft(); text.focus(); };
+
+  // ---------- splitting ----------
+  function splitText(s){
+    s = s.trim(); if(!s) return [];
+    let parts = [s];
+    if(prefs.split){
+      parts = (s.match(/[^.!?\n]+[.!?]*|\n+/g) || [s]).map(x => x.trim()).filter(x => x && !/^[.!?]+$/.test(x));
+    }
+    // a prefix on the first sentence carries to the rest unless they set their own
+    let base = {color:prefs.color, fx:prefs.fx};
+    return parts.map(p => { const r = parsePrefix(p, base); base = {color:r.color, fx:r.fx}; return r; }).filter(r => r.text);
+  }
+
+  // ---------- fitting ----------
+  const measure = $('measure');
+  function fit(str, single){
+    const stage = $('stage');
+    const W = stage.clientWidth, H = stage.clientHeight;
+    if(single) return Math.floor(Math.min(H * 0.4, W * 0.45, 320));
+    // leave headroom for wave/shake/slide movement
+    const Hs = H * 0.82, Ws = Math.floor(W * 0.96);
+    build(measure, str, false);
+    measure.style.width = Ws + 'px';
+    let lo = 8, hi = Math.max(W, H), best = lo;
+    for(let i=0;i<22;i++){
+      const mid = (lo+hi)/2;
+      measure.style.fontSize = mid + 'px';
+      if(measure.scrollWidth <= Ws && measure.scrollHeight <= Hs){ best = mid; lo = mid; } else hi = mid;
+    }
+    return Math.floor(best);
+  }
+
+  // ---------- big view ----------
+  let parts = [], idx = 0, timer = null, hideBar = null, bigActor = null;
+  const big = $('big'), word = $('word');
+
+  function render(){
+    const p = parts[idx]; if(!p) return;
+    stop(bigActor);
+    word.style.transform = ''; word.style.opacity = 1;
+    word.style.fontSize = fit(p.text, p.fx === 'scroll') + 'px';
+    bigActor = animate(word, p.text, p.color, p.fx, {stage: $('stage')});
+    $('counter').textContent = parts.length > 1 ? `${idx+1} / ${parts.length}` : '';
+    $('prev').style.display = $('next').style.display = parts.length > 1 ? '' : 'none';
+    clearTimeout(timer);
+    if(prefs.autoplay > 0 && idx < parts.length - 1) timer = setTimeout(() => step(1), prefs.autoplay*1000);
+  }
+  function step(d){ const n = idx + d; if(n < 0 || n >= parts.length) return; idx = n; render(); }
+  async function show(s){
+    parts = splitText(s);
+    if(!parts.length){ toast('Type something first'); text.focus(); return; }
+    idx = 0;
+    big.style.background = prefs.bg;
+    big.classList.add('open'); document.body.style.overflow='hidden';
+    try{ await document.fonts.ready; }catch(e){}
+    render(); pokeBar();
+  }
+  function closeBig(){
+    clearTimeout(timer); stop(bigActor); bigActor = null;
+    big.classList.remove('open'); document.body.style.overflow='';
+    if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  }
+  $('go').onclick = () => show(text.value);
+  $('closeBig').onclick = e => { e.stopPropagation(); closeBig(); };
+  $('prev').onclick = e => { e.stopPropagation(); step(-1); };
+  $('next').onclick = e => { e.stopPropagation(); step(1); };
+  $('fs').onclick = async e => {
+    e.stopPropagation();
+    try{ if(document.fullscreenElement) await document.exitFullscreen(); else await big.requestFullscreen(); }
+    catch(err){ toast('Fullscreen not available here'); }
+  };
+  document.addEventListener('fullscreenchange', () => {
+    $('fs').textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
+    if(big.classList.contains('open')) setTimeout(render, 60);
+  });
+
+  function pokeBar(){
+    const b = $('bigbar'); b.classList.remove('hide'); $('closeBig').style.opacity = .6;
+    clearTimeout(hideBar); hideBar = setTimeout(() => { b.classList.add('hide'); $('closeBig').style.opacity = .15; }, 2500);
+  }
+
+  let sx = null, sy = null, swiped = false;
+  big.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; swiped = false; pokeBar(); });
+  big.addEventListener('pointerup', e => {
+    if(sx == null) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){ step(dx < 0 ? 1 : -1); swiped = true; }
+    sx = null;
+  });
+  big.addEventListener('click', e => {
+    if(swiped || e.target.closest('button')) return;
+    if(parts.length <= 1){ pokeBar(); return; }
+    step(e.clientX < innerWidth/3 ? -1 : 1);
+  });
+  big.addEventListener('pointermove', () => { if(big.classList.contains('open')) pokeBar(); });
+
+  document.addEventListener('keydown', e => {
+    if(!big.classList.contains('open')){
+      if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); show(text.value); }
+      return;
+    }
+    if(e.key === 'Escape') closeBig();
+    else if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(e.key)){ e.preventDefault(); step(1); }
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); step(-1); }
+  });
+
+  let rt;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if(big.classList.contains('open')) render(); }, 100); });
+
+  // ---------- RuneScape font status ----------
+  async function checkRSFont(){
+    const status = $('fontStatus');
+    try{
+      const ok = (await document.fonts.load('700 20px RSFont')).length > 0;
+      status.textContent = ok ? 'RuneScape font loaded' : 'fonts/runescape.ttf not found, using Pixelify Sans';
+      status.style.color = ok ? '#00ff00' : '#ff6060';
+      if(ok){ refreshPreview(); if(big.classList.contains('open')) render(); }
+    }catch(e){ status.textContent = 'Couldn\'t check the font'; }
+  }
+
+  chips();
+  checkRSFont();
+  if(document.fonts) document.fonts.ready.then(refreshPreview).catch(()=>{});
+})();
+</script>
+</body>
+
+</html>
