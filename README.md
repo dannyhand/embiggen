@@ -9,3 +9,8 @@ It also works as a colorful flashlight to help your friends find you in a crowd,
 
 Credit: *briercan* is the original author of package *com.briercan.embiggen*, which is no longer available to download on android, but none of their original code is used here.
 
+# Scape Text (/rs/)
+It's embiggen, but styled like Old School RuneScape chat text! Includes text colors and effects found in the game, as well as a custom color chooser. Font is from [InteractiveRune](https://sites.google.com/site/interactiverune/kits/fonts?pli=1&authuser=0)
+
+Try it out at https://dannyhand.us/embiggen/rs/
+
