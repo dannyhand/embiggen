@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f2937">
+  <title>Embiggen</title>
+  <style>
+    :root {
+      --bg: #f5f5f4;
+      --card: #fff;
+      --ink: #1c1917;
+      --muted: #78716c;
+      --line: #e7e5e4;
+      --accent: #2563eb;
+      --accent-ink: #fff;
+      --danger: #dc2626;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0c0a09;
+        --card: #1c1917;
+        --ink: #f5f5f4;
+        --muted: #a8a29e;
+        --line: #292524;
+        --accent: #3b82f6;
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    .app {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0;
+      letter-spacing: -.01em
+    }
+
+    h1 span {
+      font-size: 30px
+    }
+
+    .iconbtn {
+      background: none;
+      border: 0;
+      color: var(--ink);
+      font-size: 22px;
+      padding: 8px;
+      border-radius: 10px;
+      cursor: pointer
+    }
+
+    .iconbtn:hover {
+      background: var(--line)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    button.btn {
+      flex: 1;
+      min-width: 120px;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font: inherit;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--line);
+      color: var(--ink);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 18px
+    }
+
+    button.btn:active {
+      transform: scale(.98)
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0
+    }
+
+    h2 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin: 6px 2px 0
+    }
+
+    .saved {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .saved li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 6px 6px 6px 14px
+    }
+
+    .saved .txt {
+      flex: 1;
+      cursor: pointer;
+      padding: 8px 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .saved .small {
+      background: none;
+      border: 0;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer
+    }
+
+    .saved .small:hover {
+      background: var(--line);
+      color: var(--ink)
+    }
+
+    .saved .del:hover {
+      color: var(--danger)
+    }
+
+    .foot {
+      text-align: center;
+      padding: 24px 0 8px;
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    .foot a {
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .foot a:hover {
+      color: var(--accent);
+      border-color: var(--accent)
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 4px 2px
+    }
+
+    /* settings */
+    .settings {
+      display: none;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    .settings.open {
+      display: flex
+    }
+
+    .set {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px
+    }
+
+    .set label {
+      font-weight: 500
+    }
+
+    .set small {
+      display: block;
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 12px
+    }
+
+    input[type=color] {
+      width: 52px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: none;
+      padding: 2px;
+      cursor: pointer
+    }
+
+    select {
+      font: inherit;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--ink)
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex: none
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      background: var(--line);
+      border-radius: 99px;
+      transition: .2s;
+      cursor: pointer
+    }
+
+    .switch span::before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .3)
+    }
+
+    .switch input:checked+span {
+      background: var(--accent)
+    }
+
+    .switch input:checked+span::before {
+      transform: translateX(20px)
+    }
+
+    .preview {
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 28px;
+      border: 1px solid var(--line)
+    }
+
+    /* big view */
+    #big {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 10;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-y;
+      padding: calc(env(safe-area-inset-top) + 2vmin) calc(env(safe-area-inset-right) + 3vmin) calc(env(safe-area-inset-bottom) + 2vmin) calc(env(safe-area-inset-left) + 3vmin);
+    }
+
+    #big.open {
+      display: flex
+    }
+
+    #stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative
+    }
+
+    #word {
+      font-weight: 800;
+      line-height: 1.05;
+      text-align: center;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+      white-space: pre-wrap;
+    }
+
+    #word.scale {
+      animation: scaleIn .35s cubic-bezier(.2, .8, .2, 1)
+    }
+
+    #word.fade {
+      animation: fadeIn .3s ease
+    }
+
+    #word.slide {
+      animation: slideIn .3s cubic-bezier(.2, .8, .2, 1)
+    }
+
+    #word.slideback {
+      animation: slideBack .3s cubic-bezier(.2, .8, .2, 1)
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(.2);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(30%);
+        opacity: 0
+      }
+
+      to {
+        transform: none;
+        opacity: 1
+      }
+    }
+
+    @keyframes slideBack {
+      from {
+        transform: translateX(-30%);
+        opacity: 0
+      }
+
+      to {
+        transform: none;
+        opacity: 1
+      }
+    }
+
+    .bigbar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(env(safe-area-inset-bottom) + 10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      opacity: .55;
+      transition: opacity .2s;
+      pointer-events: none
+    }
+
+    .bigbar.hide {
+      opacity: 0
+    }
+
+    .bigbar>* {
+      pointer-events: auto
+    }
+
+    .pill {
+      background: rgba(127, 127, 127, .25);
+      backdrop-filter: blur(6px);
+      border: 0;
+      border-radius: 99px;
+      padding: 8px 14px;
+      font: 600 14px system-ui;
+      cursor: pointer;
+      color: inherit
+    }
+
+    #counter {
+      font: 600 14px system-ui
+    }
+
+    .close {
+      position: absolute;
+      top: calc(env(safe-area-inset-top) + 8px);
+      right: calc(env(safe-area-inset-right) + 8px);
+      opacity: .5
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      background: #1c1917;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: .25s;
+      z-index: 20;
+      pointer-events: none
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%)
+    }
+
+    /* hidden measuring box */
+    #measure {
+      position: absolute;
+      visibility: hidden;
+      left: -99999px;
+      top: 0;
+      font-weight: 800;
+      line-height: 1.05;
+      text-align: center;
+      white-space: pre-wrap;
+      overflow-wrap: normal;
+      word-break: normal
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <h1><span>E</span>mbiggen</h1>
+      <button class="iconbtn" id="gear" aria-label="Settings" title="Settings">⚙︎</button>
+    </header>
+
+    <div class="card settings" id="settings">
+      <div class="set"><label for="fg">Text color</label><input type="color" id="fg" value="#000000"></div>
+      <div class="set"><label for="bg">Background color</label><input type="color" id="bg" value="#ffffff"></div>
+      <div class="set">
+        <label for="anim">Animation</label>
+        <select id="anim">
+          <option value="scale">Scale in</option>
+          <option value="fade">Fade</option>
+          <option value="slide">Slide</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+      <div class="set">
+        <label for="split">Split sentences<small>. ! or ? starts a new screen. Swipe or tap for the next
+            one.</small></label>
+        <label class="switch"><input type="checkbox" id="split"><span></span></label>
+      </div>
+      <div class="set">
+        <label for="caps">ALL CAPS</label>
+        <label class="switch"><input type="checkbox" id="caps"><span></span></label>
+      </div>
+      <div class="set">
+        <label for="autoplay">Auto-advance<small>Seconds per sentence (0 = off)</small></label>
+        <input type="number" id="autoplay" min="0" max="30" step="0.5" value="0"
+          style="width:72px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)">
+      </div>
+      <div class="row">
+        <button class="btn" id="swap">Swap colors</button>
+        <button class="btn" id="reset">Reset</button>
+      </div>
+      <div class="preview" id="preview">Aa</div>
+    </div>
+
+    <div class="card">
+      <textarea id="text" placeholder="What do you want to embiggen?" aria-label="Text to embiggen"></textarea>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="go">Embiggen</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="save">Save text</button>
+      <button class="btn" id="copy">Copy</button>
+      <button class="btn" id="clear">Clear</button>
+    </div>
+    <p class="hint">Tip: Ctrl+Enter shows it big from a keyboard. In big mode: tap or swipe for the next sentence, use
+      the arrow keys, and press Esc to exit.</p>
+
+    <h2>Saved text</h2>
+    <ul class="saved" id="savedList"></ul>
+
+    <footer class="foot"><a href="https://dannyhand.us" target="_blank" rel="noopener">dannyhand.us</a></footer>
+  </div>
+
+  <div id="big" role="dialog" aria-label="Embiggened text">
+    <div id="stage">
+      <div id="word"></div>
+    </div>
+    <button class="pill close" id="closeBig" aria-label="Close">✕</button>
+    <div class="bigbar" id="bigbar">
+      <button class="pill" id="prev" aria-label="Previous">‹</button>
+      <span id="counter"></span>
+      <button class="pill" id="next" aria-label="Next">›</button>
+      <button class="pill" id="fs">Fullscreen</button>
+    </div>
+  </div>
+  <div id="measure"></div>
+  <div id="toast"></div>
+
+  <script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem('embiggen.'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem('embiggen.'+k, JSON.stringify(v)); }catch(e){} }
+  };
+  const DEFAULTS = {fg:'#000000', bg:'#ffffff', anim:'scale', split:true, caps:false, autoplay:0};
+  let prefs = Object.assign({}, DEFAULTS, store.get('prefs', {}));
+  let saved = store.get('saved', []);
+  const text = $('text');
+  text.value = store.get('draft', '');
+
+  // ---------- settings ----------
+  function applyPrefsToUI(){
+    $('fg').value = prefs.fg; $('bg').value = prefs.bg; $('anim').value = prefs.anim;
+    $('split').checked = prefs.split; $('caps').checked = prefs.caps; $('autoplay').value = prefs.autoplay;
+    const p = $('preview'); p.style.color = prefs.fg; p.style.background = prefs.bg;
+    p.textContent = prefs.caps ? 'AA' : 'Aa';
+  }
+  function savePrefs(){
+    prefs = { fg:$('fg').value, bg:$('bg').value, anim:$('anim').value, split:$('split').checked,
+              caps:$('caps').checked, autoplay:Math.max(0, parseFloat($('autoplay').value)||0) };
+    store.set('prefs', prefs); applyPrefsToUI();
+  }
+  ['fg','bg','anim','split','caps','autoplay'].forEach(id => $(id).addEventListener('input', savePrefs));
+  $('swap').onclick = () => { const a=$('fg').value; $('fg').value=$('bg').value; $('bg').value=a; savePrefs(); };
+  $('reset').onclick = () => { prefs = Object.assign({}, DEFAULTS); store.set('prefs', prefs); applyPrefsToUI(); };
+  $('gear').onclick = () => $('settings').classList.toggle('open');
+  applyPrefsToUI();
+
+  // ---------- toast ----------
+  let tt;
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),1600); }
+
+  // ---------- saved list ----------
+  function renderSaved(){
+    const ul = $('savedList'); ul.innerHTML = '';
+    if(!saved.length){ const li=document.createElement('div'); li.className='empty'; li.textContent='Nothing saved yet.'; ul.appendChild(li); return; }
+    saved.forEach((s, i) => {
+      const li = document.createElement('li');
+      const t = document.createElement('div'); t.className='txt'; t.textContent = s; t.title='Show big';
+      t.onclick = () => { text.value = s; draft(); show(s); };
+      const edit = document.createElement('button'); edit.className='small'; edit.textContent='Edit';
+      edit.onclick = () => { text.value = s; draft(); text.focus(); window.scrollTo({top:0,behavior:'smooth'}); };
+      const del = document.createElement('button'); del.className='small del'; del.textContent='Delete'; del.setAttribute('aria-label','Delete');
+      del.onclick = () => { saved.splice(i,1); store.set('saved', saved); renderSaved(); toast('Deleted'); };
+      li.append(t, edit, del); ul.appendChild(li);
+    });
+  }
+  renderSaved();
+
+  function draft(){ store.set('draft', text.value); }
+  text.addEventListener('input', draft);
+  $('save').onclick = () => {
+    const s = text.value.trim(); if(!s){ toast('Type something first'); return; }
+    saved = [s, ...saved.filter(x => x !== s)]; store.set('saved', saved); renderSaved(); toast('Saved');
+  };
+  $('copy').onclick = async () => {
+    try{ await navigator.clipboard.writeText(text.value); toast('Copied'); }catch(e){ text.select(); toast('Select and copy manually'); }
+  };
+  $('clear').onclick = () => { text.value=''; draft(); text.focus(); };
+
+  // ---------- splitting ----------
+  function splitText(s){
+    s = s.trim(); if(!s) return [];
+    if(!prefs.split) return [s];
+    const parts = s.match(/[^.!?\n]+[.!?]*|\n+/g) || [s];
+    return parts.map(x => x.trim()).filter(x => x && !/^[.!?]+$/.test(x));
+  }
+
+  // ---------- fitting ----------
+  const measure = $('measure');
+  function fit(str){
+    const stage = $('stage');
+    const W = stage.clientWidth, H = stage.clientHeight;
+    measure.style.width = W + 'px';
+    measure.textContent = str;
+    let lo = 8, hi = Math.max(W, H) * 1.2, best = lo;
+    for(let i=0;i<22;i++){
+      const mid = (lo+hi)/2;
+      measure.style.fontSize = mid + 'px';
+      if(measure.scrollWidth <= W && measure.scrollHeight <= H){ best = mid; lo = mid; } else hi = mid;
+    }
+    return Math.floor(best);
+  }
+
+  // ---------- big view ----------
+  let parts = [], idx = 0, timer = null, hideBar = null;
+  const big = $('big'), word = $('word');
+
+  function render(dir){
+    let s = parts[idx] || '';
+    if(prefs.caps) s = s.toUpperCase();
+    word.textContent = s;
+    word.style.fontSize = fit(s) + 'px';
+    word.className = '';
+    void word.offsetWidth;
+    if(prefs.anim !== 'none') word.className = (prefs.anim === 'slide' && dir < 0) ? 'slideback' : prefs.anim;
+    $('counter').textContent = parts.length > 1 ? `${idx+1} / ${parts.length}` : '';
+    $('prev').style.display = $('next').style.display = parts.length > 1 ? '' : 'none';
+    schedule();
+  }
+  function schedule(){
+    clearTimeout(timer);
+    if(prefs.autoplay > 0 && idx < parts.length - 1) timer = setTimeout(() => step(1), prefs.autoplay*1000);
+  }
+  function step(d){
+    const n = idx + d;
+    if(n < 0 || n >= parts.length) return;
+    idx = n; render(d);
+  }
+  function show(s){
+    parts = splitText(s);
+    if(!parts.length){ toast('What do you want to embiggen?'); text.focus(); return; }
+    idx = 0;
+    big.style.background = prefs.bg; big.style.color = prefs.fg;
+    big.classList.add('open'); document.body.style.overflow='hidden';
+    render(1); pokeBar();
+  }
+  function closeBig(){
+    clearTimeout(timer); big.classList.remove('open'); document.body.style.overflow='';
+    if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  }
+  function go(){ show(text.value); }
+  $('go').onclick = go;
+  $('closeBig').onclick = e => { e.stopPropagation(); closeBig(); };
+  $('prev').onclick = e => { e.stopPropagation(); step(-1); };
+  $('next').onclick = e => { e.stopPropagation(); step(1); };
+  $('fs').onclick = async e => {
+    e.stopPropagation();
+    try{
+      if(document.fullscreenElement) await document.exitFullscreen();
+      else await big.requestFullscreen();
+    }catch(err){ toast('Fullscreen not available here'); }
+  };
+  document.addEventListener('fullscreenchange', () => {
+    $('fs').textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
+    if(big.classList.contains('open')) setTimeout(() => render(0), 60);
+  });
+
+  function pokeBar(){
+    const b = $('bigbar'); b.classList.remove('hide'); $('closeBig').style.opacity = .5;
+    clearTimeout(hideBar); hideBar = setTimeout(() => { b.classList.add('hide'); $('closeBig').style.opacity = .15; }, 2500);
+  }
+
+  // tap: right 2/3 = next, left 1/3 = back
+  let sx = null, sy = null, swiped = false;
+  big.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; swiped = false; pokeBar(); });
+  big.addEventListener('pointerup', e => {
+    if(sx == null) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){ step(dx < 0 ? 1 : -1); swiped = true; }
+    sx = null;
+  });
+  big.addEventListener('click', e => {
+    if(swiped || e.target.closest('button')) return;
+    if(parts.length <= 1) { pokeBar(); return; }
+    step(e.clientX < innerWidth/3 ? -1 : 1);
+  });
+  big.addEventListener('pointermove', () => { if(big.classList.contains('open')) pokeBar(); });
+
+  document.addEventListener('keydown', e => {
+    if(!big.classList.contains('open')){
+      if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); go(); }
+      return;
+    }
+    if(e.key === 'Escape') closeBig();
+    else if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(e.key)){ e.preventDefault(); step(1); }
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); step(-1); }
+  });
+
+  let rt;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if(big.classList.contains('open')){ const s=word.textContent; word.style.fontSize = fit(s)+'px'; } }, 80); });
+})();
+</script>
+</body>
+
+</html>
