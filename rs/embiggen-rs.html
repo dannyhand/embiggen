@@ -583,6 +583,11 @@
       opacity: .6
     }
 
+    .close.left {
+      right: auto;
+      left: calc(env(safe-area-inset-left) + 8px)
+    }
+
     #toast {
       position: fixed;
       left: 50%;
@@ -675,8 +680,8 @@
     <ul class="saved" id="savedList"></ul>
 
     <footer class="foot"><a href="https://dannyhand.us" target="_blank" rel="noopener">dannyhand.us</a> - <a
-        href="https://github.com/dannyhand/embiggen" target="_blank" rel="noopener">github</a> - <a
-        href="../" target="_blank" rel="noopener">embiggen</a></footer>
+        href="https://github.com/dannyhand/embiggen" target="_blank" rel="noopener">github</a> - <a href="/embiggen/"
+        rel="noopener">embiggen</a></footer>
   </div>
 
   <div id="big" role="dialog" aria-label="Big text">
@@ -684,6 +689,7 @@
       <div id="word" class="rstext"></div>
     </div>
     <button class="pill close" id="closeBig" aria-label="Close">X</button>
+    <button class="pill close left" id="closeBigL" aria-label="Close">X</button>
     <div class="bigbar" id="bigbar">
       <button class="pill" id="prev" aria-label="Previous">&lt;</button>
       <span id="counter"></span>
@@ -1030,16 +1036,23 @@
     idx = 0;
     big.style.background = prefs.bg;
     big.classList.add('open'); document.body.style.overflow='hidden';
+    if(!(history.state && history.state.big)) history.pushState({big:true}, '');
     try{ await document.fonts.ready; }catch(e){}
     render(); pokeBar();
   }
+  // Android back button / browser back closes big mode
   function closeBig(){
+    if(history.state && history.state.big) history.back();   // popstate below does the hiding
+    else hideBig();
+  }
+  addEventListener('popstate', () => { if(big.classList.contains('open')) hideBig(); });
+  function hideBig(){
     clearTimeout(timer); stop(bigActor); bigActor = null;
     big.classList.remove('open'); document.body.style.overflow='';
     if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   }
   $('go').onclick = () => show(text.value);
-  $('closeBig').onclick = e => { e.stopPropagation(); closeBig(); };
+  $('closeBig').onclick = $('closeBigL').onclick = e => { e.stopPropagation(); closeBig(); };
   $('prev').onclick = e => { e.stopPropagation(); step(-1); };
   $('next').onclick = e => { e.stopPropagation(); step(1); };
   $('fs').onclick = async e => {
@@ -1053,8 +1066,8 @@
   });
 
   function pokeBar(){
-    const b = $('bigbar'); b.classList.remove('hide'); $('closeBig').style.opacity = .6;
-    clearTimeout(hideBar); hideBar = setTimeout(() => { b.classList.add('hide'); $('closeBig').style.opacity = .15; }, 2500);
+    const b = $('bigbar'); b.classList.remove('hide'); document.querySelectorAll('#big .close').forEach(c => c.style.opacity = .6);
+    clearTimeout(hideBar); hideBar = setTimeout(() => { b.classList.add('hide'); document.querySelectorAll('#big .close').forEach(c => c.style.opacity = .15); }, 2500);
   }
 
   let sx = null, sy = null, swiped = false;
