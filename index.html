@@ -981,7 +981,9 @@
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if(big.classList.contains('open')){ const s=word.textContent; word.style.fontSize = fit(s)+'px'; } }, 80); });
 })();
 </script>
-  <script>  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
 </body>
 
 </html>
