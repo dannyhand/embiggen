@@ -89,6 +89,41 @@
       background: var(--line)
     }
 
+    .pillbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      padding: 7px 14px 7px 11px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, border-color .15s
+    }
+
+    .pillbtn:hover {
+      background: var(--line)
+    }
+
+    .pillbtn[aria-expanded="true"] {
+      background: var(--line);
+      border-color: var(--muted)
+    }
+
+    .pillbtn svg {
+      width: 18px;
+      height: 18px;
+      transition: transform .3s ease
+    }
+
+    .pillbtn[aria-expanded="true"] svg {
+      transform: rotate(60deg)
+    }
+
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -477,6 +512,10 @@
       display: flex
     }
 
+    .mirror {
+      transform: scaleX(-1)
+    }
+
     #stage {
       flex: 1;
       display: flex;
@@ -648,7 +687,13 @@
   <div class="app">
     <header>
       <h1><span>E</span>mbiggen</h1>
-      <button class="iconbtn" id="gear" aria-label="Settings" title="Settings">⚙︎</button>
+      <button class="pillbtn" id="gear" aria-expanded="false" aria-controls="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path
+            d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+          <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+        </svg>Settings</button>
     </header>
 
     <div class="card settings" id="settings">
@@ -673,6 +718,10 @@
       <div class="set">
         <label for="caps">ALL CAPS</label>
         <label class="switch"><input type="checkbox" id="caps"><span></span></label>
+      </div>
+      <div class="set">
+        <label for="mirror">Mirror text<small>Flips the text so it reads normally in a mirror.</small></label>
+        <label class="switch"><input type="checkbox" id="mirror"><span></span></label>
       </div>
       <div class="set">
         <label for="autoplay">Auto-advance<small>Seconds per sentence (0 = off)</small></label>
@@ -804,7 +853,7 @@
     };
   })();
 
-  const DEFAULTS = {fg:'#000000', bg:'#ffffff', anim:'scale', split:true, caps:false, autoplay:0};
+  const DEFAULTS = {fg:'#000000', bg:'#ffffff', anim:'scale', split:true, caps:false, mirror:false, autoplay:0};
   let prefs = Object.assign({}, DEFAULTS, store.get('prefs', {}));
   let saved = store.get('saved', []);
   const text = $('text');
@@ -813,21 +862,22 @@
   // ---------- settings ----------
   function applyPrefsToUI(){
     $('fg').style.background = prefs.fg; $('bg').style.background = prefs.bg; $('anim').value = prefs.anim;
-    $('split').checked = prefs.split; $('caps').checked = prefs.caps; $('autoplay').value = prefs.autoplay;
+    $('split').checked = prefs.split; $('caps').checked = prefs.caps; $('mirror').checked = prefs.mirror; $('autoplay').value = prefs.autoplay;
     const p = $('preview'); p.style.color = prefs.fg; p.style.background = prefs.bg;
     p.textContent = prefs.caps ? 'AA' : 'Aa';
+    p.classList.toggle('mirror', prefs.mirror); $('stage').classList.toggle('mirror', prefs.mirror);
   }
   function savePrefs(){
     prefs = { fg:prefs.fg, bg:prefs.bg, anim:$('anim').value, split:$('split').checked,
-              caps:$('caps').checked, autoplay:Math.max(0, parseFloat($('autoplay').value)||0) };
+              caps:$('caps').checked, mirror:$('mirror').checked, autoplay:Math.max(0, parseFloat($('autoplay').value)||0) };
     store.set('prefs', prefs); applyPrefsToUI();
   }
-  ['anim','split','caps','autoplay'].forEach(id => $(id).addEventListener('input', savePrefs));
+  ['anim','split','caps','mirror','autoplay'].forEach(id => $(id).addEventListener('input', savePrefs));
   $('fg').onclick = () => picker.open(prefs.fg, 'Text color', c => { prefs.fg = c; savePrefs(); });
   $('bg').onclick = () => picker.open(prefs.bg, 'Background color', c => { prefs.bg = c; savePrefs(); });
   $('swap').onclick = () => { [prefs.fg, prefs.bg] = [prefs.bg, prefs.fg]; savePrefs(); };
   $('reset').onclick = () => { prefs = Object.assign({}, DEFAULTS); store.set('prefs', prefs); applyPrefsToUI(); };
-  $('gear').onclick = () => $('settings').classList.toggle('open');
+  $('gear').onclick = () => $('gear').setAttribute('aria-expanded', $('settings').classList.toggle('open'));
   applyPrefsToUI();
 
   // ---------- toast ----------
