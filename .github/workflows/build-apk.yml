@@ -40,16 +40,77 @@ jobs:
         run: |
           npm init -y > /dev/null
           npm i @capacitor/core@^7 @capacitor/android@^7
-          npm i -D @capacitor/cli@^7 @capacitor/assets
+          npm i -D @capacitor/cli@^7
           npx cap init "Embiggen" us.dannyhand.embiggen --web-dir www
           npx cap add android
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Writes every launcher icon Android uses (legacy + adaptive) straight
+      # from icons/icon-512.png, replacing all of Capacitor's default icons.
       - name: Generate app icons
-        working-directory: cap-build
+        working-directory: cap-build/android/app/src/main/res
         run: |
-          mkdir -p assets
-          cp www/icons/icon-512.png assets/icon-only.png
-          npx @capacitor/assets generate --android --iconBackgroundColor '#000000'
+          pip install --quiet pillow
+          python3 - <<'EOF'
+          import os
+          from PIL import Image
+
+          src = Image.open("../../../../../www/icons/icon-512.png").convert("RGBA")
+
+          # Adaptive-icon background colour = the icon's top-left pixel
+          # (white if that corner is transparent).
+          r, g, b, a = src.getpixel((0, 0))
+          bg = "#{:02X}{:02X}{:02X}".format(r, g, b) if a > 0 else "#FFFFFF"
+
+          sizes = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
+          for dpi, s in sizes.items():
+              d = f"mipmap-{dpi}"
+              os.makedirs(d, exist_ok=True)
+              # Legacy icons (Android 7 and older launchers)
+              legacy = src.resize((int(48 * s),) * 2, Image.LANCZOS)
+              legacy.save(f"{d}/ic_launcher.png")
+              legacy.save(f"{d}/ic_launcher_round.png")
+              # Adaptive foreground: 108dp canvas, icon fills the 72dp visible area
+              canvas = int(108 * s)
+              inner = int(72 * s)
+              fg = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
+              icon = src.resize((inner, inner), Image.LANCZOS)
+              off = (canvas - inner) // 2
+              fg.paste(icon, (off, off), icon)
+              fg.save(f"{d}/ic_launcher_foreground.png")
+
+          adaptive = """<?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_launcher_background"/>
+              <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+          </adaptive-icon>
+          """
+          os.makedirs("mipmap-anydpi-v26", exist_ok=True)
+          for name in ("ic_launcher.xml", "ic_launcher_round.xml"):
+              with open(f"mipmap-anydpi-v26/{name}", "w") as f:
+                  f.write(adaptive)
+
+          os.makedirs("values", exist_ok=True)
+          with open("values/ic_launcher_background.xml", "w") as f:
+              f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
+                      f'    <color name="ic_launcher_background">{bg}</color>\n</resources>\n')
+
+          # Replace Capacitor's default splash images with the icon centred on bg
+          for root, _, files in os.walk("."):
+              for fn in files:
+                  if fn == "splash.png":
+                      p = os.path.join(root, fn)
+                      w, h = Image.open(p).size
+                      splash = Image.new("RGBA", (w, h), bg)
+                      size = min(w, h) // 3
+                      ic = src.resize((size, size), Image.LANCZOS)
+                      splash.paste(ic, ((w - size) // 2, (h - size) // 2), ic)
+                      splash.save(p)
+          print("Icons written, background", bg)
+          EOF
 
       - name: Set version
         working-directory: cap-build/android/app
