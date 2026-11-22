@@ -1,8 +1,8 @@
 // Embiggen service worker: makes the app installable and work offline.
 // Bump VERSION whenever you deploy changes so phones pick up the new files.
-const VERSION = 'embiggen-v5';
+const VERSION = 'embiggen-v6';
 const SHELL = ['./', './index.html', './embiggen.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png',
-  './rs/', './rs/index.html', './rs/fonts/runescape.ttf'];
+  './rs/', './rs/index.html', './rs/embiggen-rs.html', './rs/fonts/runescape.ttf'];
 
 self.addEventListener('install', (event) => {
   // cache: 'reload' skips the browser's HTTP cache so we store the files actually on the server.
