@@ -55,7 +55,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: embiggen-v${{ env.VERSION }}
+          name: embiggen-v${{ env.VERSION }}-android
           path: |
             android/embiggen-v${{ env.VERSION }}.apk
             android/embiggen-v${{ env.VERSION }}.aab
