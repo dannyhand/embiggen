@@ -2,10 +2,8 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:        # "Run workflow" button (works from the GitHub app)
-  push:
-    tags: ['v*']            # also build when you push a tag like v1.0.0
-
+  workflow_dispatch        # "Run workflow" button (works from the GitHub app)
+  
 jobs:
   build:
     runs-on: ubuntu-latest
