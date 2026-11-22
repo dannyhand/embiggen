@@ -39,7 +39,7 @@ jobs:
         working-directory: cap-build
         run: |
           npm init -y > /dev/null
-          npm i @capacitor/core@^7 @capacitor/android@^7
+          npm i @capacitor/core@^7 @capacitor/android@^7 @capacitor/app@^7
           npm i -D @capacitor/cli@^7
           npx cap init "Embiggen" us.dannyhand.embiggen --web-dir www
           npx cap add android
@@ -137,6 +137,7 @@ jobs:
           "$BT/zipalign" -p -f 4 apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" sign --ks "$KS" --ks-key-alias android \
             --ks-pass env:KS_PASS --key-pass env:KEY_PASS \
+            --v4-signing-enabled false \
             --out "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.apk" "$RUNNER_TEMP/aligned.apk"
 
           cp bundle/release/app-release.aab "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.aab"
