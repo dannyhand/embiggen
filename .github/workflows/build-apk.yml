@@ -1,9 +1,8 @@
-# Save as .github/workflows/build-apk.yml in dannyhand/embiggen
+# .github/workflows/build-apk.yml  (Capacitor version: web files bundled inside the APK)
 name: Build Android APK
 
-on:
-  workflow_dispatch        # "Run workflow" button (works from the GitHub app)
-  
+on: workflow_dispatch
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,46 +16,75 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
-      - name: Install Bubblewrap
-        run: npm i -g @bubblewrap/cli
-
-      # Point Bubblewrap at the runner's JDK and Android SDK so it
-      # doesn't stop to ask whether it should download its own.
-      - name: Configure Bubblewrap
+      - name: Read version
         run: |
-          SDK="$ANDROID_HOME"
-          sudo ln -sfn "$SDK/cmdline-tools/latest/bin" "$SDK/bin"
-          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-          "$SDK/cmdline-tools/latest/bin/sdkmanager" "build-tools;36.1.0"
-          mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$SDK\"}" > ~/.bubblewrap/config.json
+          echo "VERSION=$(jq -r .versionName version.json)" >> "$GITHUB_ENV"
+          echo "CODE=$(jq -r .versionCode version.json)" >> "$GITHUB_ENV"
 
-      - name: Restore signing key
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/android.keystore
+      # Copy the web app into cap-build/www. sw.js is left out on purpose:
+      # the files are already local, and a cache-first service worker could
+      # keep serving old files after you install an updated APK.
+      - name: Prepare web files
+        run: |
+          mkdir -p cap-build/www
+          rsync -a \
+            --exclude '.*' --exclude 'android' --exclude 'cap-build' \
+            --exclude 'node_modules' --exclude 'sw.js' --exclude 'version.json' \
+            --exclude 'README.md' --exclude 'LICENSE' \
+            ./ cap-build/www/
 
-      - name: Generate and build
-        working-directory: android
+      - name: Create Capacitor project
+        working-directory: cap-build
+        run: |
+          npm init -y > /dev/null
+          npm i @capacitor/core@^7 @capacitor/android@^7
+          npm i -D @capacitor/cli@^7 @capacitor/assets
+          npx cap init "Embiggen" us.dannyhand.embiggen --web-dir www
+          npx cap add android
+
+      - name: Generate app icons
+        working-directory: cap-build
+        run: |
+          mkdir -p assets
+          cp www/icons/icon-512.png assets/icon-only.png
+          npx @capacitor/assets generate --android --iconBackgroundColor '#000000'
+
+      - name: Set version
+        working-directory: cap-build/android/app
+        run: |
+          sed -i "s/versionCode [0-9]*/versionCode $CODE/" build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" build.gradle
+          grep -E 'versionCode|versionName' build.gradle
+
+      - name: Build unsigned APK and AAB
+        working-directory: cap-build/android
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Sign
+        working-directory: cap-build/android/app/build/outputs
         env:
-          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
         run: |
-          bubblewrap update --skipVersionUpgrade
-          bubblewrap build --skipPwaValidation
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/android.keystore"
+          KS="$RUNNER_TEMP/android.keystore"
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          mkdir -p "$GITHUB_WORKSPACE/out"
 
-      - name: Rename outputs
-        working-directory: android
-        run: |
-          VERSION=$(jq -r .appVersionName twa-manifest.json)
-          mv app-release-signed.apk "embiggen-v$VERSION.apk"
-          mv app-release-bundle.aab "embiggen-v$VERSION.aab"
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          "$BT/zipalign" -p -f 4 apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$KS" --ks-key-alias android \
+            --ks-pass env:KS_PASS --key-pass env:KEY_PASS \
+            --out "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.apk" "$RUNNER_TEMP/aligned.apk"
+
+          cp bundle/release/app-release.aab "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.aab"
+          jarsigner -keystore "$KS" -storepass "$KS_PASS" -keypass "$KEY_PASS" \
+            "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.aab" android
+
+          rm -f "$KS"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: embiggen-v${{ env.VERSION }}-android
-          path: |
-            android/embiggen-v${{ env.VERSION }}.apk
-            android/embiggen-v${{ env.VERSION }}.aab
-            
+          name: embiggen-v${{ env.VERSION }}
+          path: out/
