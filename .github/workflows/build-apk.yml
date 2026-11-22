@@ -1,4 +1,5 @@
-# .github/workflows/build-apk.yml  (Capacitor version: web files bundled inside the APK)
+# .github/workflows/build-apk.yml  (Capacitor: web files bundled inside the APK)
+# Builds two apps in one run: Embiggen (main page) and Scape Text (rs/ page).
 name: Build Android APK
 
 on: workflow_dispatch
@@ -6,6 +7,18 @@ on: workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: embiggen
+            name: Embiggen
+            id: us.dannyhand.embiggen
+            src: ./
+          - app: scapetext
+            name: Scape Text
+            id: us.dannyhand.scapetext
+            src: rs/
     steps:
       - uses: actions/checkout@v4
 
@@ -23,9 +36,10 @@ jobs:
           echo "VERSION=$(jq -r .versionName version.json)" >> "$GITHUB_ENV"
           echo "CODE=$(jq -r .versionCode version.json)" >> "$GITHUB_ENV"
 
-      # Copy the web app into cap-build/www. sw.js is left out on purpose:
-      # the files are already local, and a cache-first service worker could
-      # keep serving old files after you install an updated APK.
+      # Copy the web app into cap-build/www. Embiggen gets the whole site;
+      # Scape Text gets only rs/, so rs/index.html becomes its start page.
+      # sw.js is left out on purpose: the files are already local, and a
+      # cache-first service worker could keep serving old files after an update.
       - name: Prepare web files
         run: |
           mkdir -p cap-build/www
@@ -33,7 +47,22 @@ jobs:
             --exclude '.*' --exclude 'android' --exclude 'cap-build' \
             --exclude 'node_modules' --exclude 'sw.js' --exclude 'version.json' \
             --exclude 'README.md' --exclude 'LICENSE' \
-            ./ cap-build/www/
+            "${{ matrix.src }}" cap-build/www/
+
+      # Scape Text has no main Embiggen page inside it, so remove links that
+      # point back up to it (only in this build; the website is unchanged).
+      - name: Remove links to the main page (Scape Text only)
+        if: matrix.app == 'scapetext'
+        run: |
+          python3 - <<'EOF'
+          p = "cap-build/www/index.html"
+          html = open(p, encoding="utf-8").read()
+          js = ("<script>document.addEventListener('DOMContentLoaded',function(){"
+                "document.querySelectorAll('a[href^=\"../\"],a[href^=\"/embiggen\"]')"
+                ".forEach(function(a){a.remove();});});</script>")
+          html = html.replace("</body>", js + "</body>", 1) if "</body>" in html else html + js
+          open(p, "w", encoding="utf-8").write(html)
+          EOF
 
       - name: Create Capacitor project
         working-directory: cap-build
@@ -41,7 +70,7 @@ jobs:
           npm init -y > /dev/null
           npm i @capacitor/core@^7 @capacitor/android@^7 @capacitor/app@^7
           npm i -D @capacitor/cli@^7
-          npx cap init "Embiggen" us.dannyhand.embiggen --web-dir www
+          npx cap init "${{ matrix.name }}" "${{ matrix.id }}" --web-dir www
           npx cap add android
 
       - uses: actions/setup-python@v5
@@ -49,7 +78,8 @@ jobs:
           python-version: '3.12'
 
       # Writes every launcher icon Android uses (legacy + adaptive) straight
-      # from icons/icon-512.png, replacing all of Capacitor's default icons.
+      # from icons/icon-512.png (rs/icons/icon-512.png for Scape Text),
+      # replacing all of Capacitor's default icons.
       - name: Generate app icons
         working-directory: cap-build/android/app/src/main/res
         run: |
@@ -138,15 +168,15 @@ jobs:
           "$BT/apksigner" sign --ks "$KS" --ks-key-alias android \
             --ks-pass env:KS_PASS --key-pass env:KEY_PASS \
             --v4-signing-enabled false \
-            --out "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.apk" "$RUNNER_TEMP/aligned.apk"
+            --out "$GITHUB_WORKSPACE/out/${{ matrix.app }}-v$VERSION.apk" "$RUNNER_TEMP/aligned.apk"
 
-          cp bundle/release/app-release.aab "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.aab"
+          cp bundle/release/app-release.aab "$GITHUB_WORKSPACE/out/${{ matrix.app }}-v$VERSION.aab"
           jarsigner -keystore "$KS" -storepass "$KS_PASS" -keypass "$KEY_PASS" \
-            "$GITHUB_WORKSPACE/out/embiggen-v$VERSION.aab" android
+            "$GITHUB_WORKSPACE/out/${{ matrix.app }}-v$VERSION.aab" android
 
           rm -f "$KS"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: embiggen-v${{ env.VERSION }}-android
+          name: ${{ matrix.app }}-v${{ env.VERSION }}-android
           path: out/
