@@ -26,9 +26,12 @@ jobs:
       # doesn't stop to ask whether it should download its own.
       - name: Configure Bubblewrap
         run: |
+          SDK="$ANDROID_HOME"
+          sudo ln -sfn "$SDK/cmdline-tools/latest/bin" "$SDK/bin"
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" "build-tools;36.1.0"
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$SDK\"}" > ~/.bubblewrap/config.json
 
       - name: Restore signing key
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/android.keystore
