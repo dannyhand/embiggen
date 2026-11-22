@@ -42,9 +42,18 @@ jobs:
           bubblewrap update --skipVersionUpgrade
           bubblewrap build --skipPwaValidation
 
+      - name: Rename outputs
+        working-directory: android
+        run: |
+          VERSION=$(jq -r .appVersionName twa-manifest.json)
+          mv app-release-signed.apk "embiggen-v$VERSION.apk"
+          mv app-release-bundle.aab "embiggen-v$VERSION.aab"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
       - uses: actions/upload-artifact@v4
         with:
-          name: embiggen-android
+          name: embiggen-v${{ env.VERSION }}
           path: |
-            android/app-release-signed.apk
-            android/app-release-bundle.aab
+            android/embiggen-v${{ env.VERSION }}.apk
+            android/embiggen-v${{ env.VERSION }}.aab
+
