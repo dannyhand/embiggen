@@ -14,3 +14,8 @@ It's embiggen, but styled like Old School RuneScape chat text! Includes text col
 
 Try it out at https://dannyhand.us/embiggen/rs/
 
+## Build for Android
+Do: `GitHub > Actions > Build Android APK`
+
+ - Uses Capacitor to produce apk for both Embiggen and Scape Text.
+ - Pre-built apk are available in Releases.
