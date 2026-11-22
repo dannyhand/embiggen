@@ -49,9 +49,10 @@ jobs:
             --exclude 'README.md' --exclude 'LICENSE' \
             "${{ matrix.src }}" cap-build/www/
 
-      # Scape Text has no main Embiggen page inside it, so remove links that
-      # point back up to it (only in this build; the website is unchanged).
-      - name: Remove links to the main page (Scape Text only)
+      # Scape Text has no main Embiggen page inside it, so links that point
+      # back up to it are pointed at the website instead (only in this build;
+      # the website and the Embiggen app are unchanged).
+      - name: Point main-page links at the website (Scape Text only)
         if: matrix.app == 'scapetext'
         run: |
           python3 - <<'EOF'
@@ -59,7 +60,7 @@ jobs:
           html = open(p, encoding="utf-8").read()
           js = ("<script>document.addEventListener('DOMContentLoaded',function(){"
                 "document.querySelectorAll('a[href^=\"../\"],a[href^=\"/embiggen\"]')"
-                ".forEach(function(a){a.remove();});});</script>")
+                ".forEach(function(a){a.href='https://dannyhand.us/embiggen/';});});</script>")
           html = html.replace("</body>", js + "</body>", 1) if "</body>" in html else html + js
           open(p, "w", encoding="utf-8").write(html)
           EOF
@@ -180,3 +181,4 @@ jobs:
         with:
           name: ${{ matrix.app }}-v${{ env.VERSION }}-android
           path: out/
+          
